@@ -5,7 +5,7 @@ Vagrant.configure("2") do |config|
 		config.vm.synced_folder "C:/boxes", "/shared_host/"
 		config.vm.hostname = "labDockerK8s"
 		config.vm.provision "shell", inline: "echo hello"
-		config.vm.network "forwarded_port", guest: 8080, host: 8080
+		config.vm.network "forwarded_port", guest: 8081, host: 8081
 
 		#Executando o  shell para instalação do docker
 		config.vm.provision "shell", inline: <<-SHELL
@@ -40,6 +40,9 @@ Vagrant.configure("2") do |config|
 			# instalação do redis
 			#sudo docker run --name redis-server -dit --restart unless-stopped redis
 			
+			#acessar o
+			#docker exec -it Name ou id /bin/bash
+					
 			#sudo reboot
 			
 		SHELL

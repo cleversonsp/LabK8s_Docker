@@ -5,9 +5,9 @@ FROM node:alpine
 WORKDIR '/app'
 
 #Step3
-COPY ./package.json ./
+COPY package.json .
 RUN npm install
-COPY ./ ./
+COPY . .
 
 #Step4
 CMD ["npm", "start"]
