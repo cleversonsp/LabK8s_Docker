@@ -1,0 +1,45 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure(2) do |config|
+  if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+    config.vm.synced_folder ".", "/vagrant", mount_options: ["dmode=775,fmode=775"]
+  else
+    config.vm.synced_folder ".", "/vagrant"
+  end
+  config.vm.define "vagrant2gb1" do |d|
+    d.vm.box = "ubuntu/trusty64"
+    d.vm.hostname = "vagrant2gb1"
+    d.vm.network "private_network", ip: "192.168.56.13"
+    # --- STARTING AUTO SETUP CONFIG ---
+    d.vm.provision "shell" do |s|
+      s.path = "temp/bootstrap/proxy/configure.sh"
+      s.args = ["#{ENV['VM_PROXY']}", "#{ENV['VM_NO_PROXY_HOSTS']}", 
+                "#{ENV['VM_INTERNAL_GIT']}", "#{ENV['VM_INTERNAL_JENKINS']}", 
+                "/vagrant/temp/bootstrap/proxy/"]
+    end
+    d.vm.provision "shell" do |s|
+      s.path = "temp/bootstrap/ansible/install.sh"
+      s.args = ["/vagrant/temp/bootstrap/ansible/"]
+    end
+    d.vm.provision :shell,
+      inline: 'ANSIBLE_NOCOWS=1 PYTHONUNBUFFERED=1 ansible-playbook /vagrant/temp/ansible/host-packages.yml -c local'
+    # --- END OF AUTO SETUP CONFIG ---
+    
+    # d.vm.provision :shell, inline: "ANSIBLE_NOCOWS=1 PYTHONUNBUFFERED=1 ansible-playbook /vagrant/ansible/app.yml -c local"
+    d.vm.provider "virtualbox" do |v|
+      v.name = "vagrant2gb1"
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
+      v.memory = 2048
+	  v.cpus=4
+    end
+  end
+  if Vagrant.has_plugin?("vagrant-cachier")
+    config.cache.scope = :box
+  end
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = true
+    config.vbguest.no_install = true
+    config.vbguest.no_remote = true
+  end
+end
